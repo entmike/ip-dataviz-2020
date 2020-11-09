@@ -8,8 +8,8 @@
       ref="pano"
       :class="{ GMap__Pano_Wrapper: true, noPano: !showStreetview }"
     ></div>
-    <slot name="markers" />
     <slot name="layers" />
+    <slot name="markers" />
   </div>
 </template>
 <script>
@@ -17,6 +17,12 @@ import GoogleMapsApiLoader from 'google-maps-api-loader'
 // const MarkerClusterer = require('node-js-marker-clusterer')
 export default {
   props: {
+    searchBox: {
+      type: Object,
+      default: () => {
+        return null
+      },
+    },
     showStreetview: {
       type: Boolean,
       default: () => {
@@ -97,6 +103,7 @@ export default {
         'tilesloaded',
         'tilt_changed',
         'zoom_changed',
+        'loaded',
       ],
     }
   },
@@ -127,7 +134,7 @@ export default {
         const GMapSettings = {
           apiKey: this.apiKey,
           // language: this.language,
-          libraries: ['visualization'],
+          libraries: ['visualization', 'places'],
           version: 'weekly',
         }
         if (this.GMaps.libraries !== undefined) {

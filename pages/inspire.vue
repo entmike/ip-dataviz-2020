@@ -1,7 +1,8 @@
 <template>
   <div>
     <!-- <v-btn @click="points = newPoints">Click Me</v-btn> -->
-    <v-btn @click="fetch()">Load Heatmap</v-btn>
+    <v-btn @click="fetchData()">Load Heatmap</v-btn>
+    <!-- <span>{{ neighborhoods }}</span> -->
     <v-switch
       v-model="enablePOI"
       :label="`Toggle Points of Interest`"
@@ -10,12 +11,20 @@
       v-model="enableStreetView"
       :label="`Toggle Street View`"
     ></v-switch>
+    <input
+      ref="pac-input"
+      class="controls"
+      type="text"
+      placeholder="Search Box"
+    />
     <IPGmap
       api-key="AIzaSyBnJ5jl0UqbTRJqe1uJEVj_J3OmZTRQRkc"
       :center="home"
       :zoom="zoom"
       :show-streetview="enableStreetView"
       :clickable-icons="enablePOI"
+      :search-box="mySearch"
+      @loaded="fetchData()"
     >
       <template v-slot:markers>
         <IPGmapMarker
@@ -28,9 +37,11 @@
           }"
           @click="currentLocation = location"
         />
+        <IPSearchBox />
       </template>
       <template v-slot:layers>
         <IPGmapHeatMap :points="points" />
+        <IPGmapAreaLayer :shape="neighborhoods" />
       </template>
     </IPGmap>
   </div>
@@ -39,20 +50,24 @@
 import IPGmap from '~/components/IPGmap.vue'
 import IPGmapMarker from '~/components/IPGmapMarker.vue'
 import IPGmapHeatMap from '~/components/IPGmapHeatMap.vue'
+import IPGmapAreaLayer from '~/components/IPGmapAreaLayer.vue'
+import IPSearchBox from '~/components/IPSearchBox.vue'
 
 export default {
   name: 'DataViz',
-  components: { IPGmap, IPGmapMarker, IPGmapHeatMap },
-  async fetch() {
-    this.points = await fetch(
-      this.$axios.defaults.baseURL + '/api/getCrimes'
-    ).then((res) => res.json())
+  components: {
+    IPGmap,
+    IPGmapMarker,
+    IPGmapHeatMap,
+    IPGmapAreaLayer,
+    IPSearchBox,
   },
   data() {
     return {
       // San Francisco
       // home: { lat: 37.7749, lng: -122.4194 },
       enablePOI: false,
+      neighborhoods: {},
       enableStreetView: false,
       home: { lat: 37.774546, lng: -122.433523 },
       zoom: 12,
@@ -88,11 +103,21 @@ export default {
     }
   },
   mounted() {
-    fetch()
+    // this.fetchData()
   },
   methods: {
-    fetch: () => {
-      fetch()
+    mySearch() {
+      return this.refs['pac-input']
+    },
+    async fetchData() {
+      console.log('Fetching Data...')
+      this.points = await fetch(
+        this.$axios.defaults.baseURL + '/api/getCrimes'
+      ).then((res) => res.json())
+
+      this.neighborhoods = await fetch(
+        this.$axios.defaults.baseURL + '/san-francisco-neighborhoods.geojson'
+      ).then((res) => res.json())
     },
   },
 }
