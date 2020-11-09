@@ -1,34 +1,38 @@
-const fs = require('fs')
 const bodyParser = require('body-parser')
 const app = require('express')()
-const csv = require('csv-parser')
+const db = require("./database.js")
 
-const data = []
-fs.createReadStream(
-  './api/data/Police_Department_Incident_Reports__2018_to_Present.csv'
-)
-  .pipe(csv())
-  .on('data', (row) => {
-    data.push(row)
-  })
-  .on('end', () => {
-    // eslint-disable-next-line no-console
-    console.log(`CSV file successfully processed (${data.length}) rows`)
-    console.log(data[0])
-  })
 
 app.use(bodyParser.json())
-app.all('/getJSON', (req, res) => {
-  res.json({ data: 'data' })
-})
-app.all('/getCrimes', (req, res) => {
-  const r = []
-  for (let i = 0; i < 100; i++) {
-    r.push({
-      lat: data[i].Latitude,
-      lng: data[i].Longitude,
-    })
+
+ app.all('/getJSON', (req, res) => {
+   console.log('getJSON called');
+  var sql = "SELECT [Row ID], [Incident Datetime], [Incident Description], [Analysis Neighborhood], [Latitude], [Longitude] from incidents where 1 = 1"
+  var params = []
+  console.log(req.body.AnalysisNeighborhood)
+  if(req.body.AnalysisNeighborhood !== ''){
+    sql = sql + ` and "Analysis Neighborhood" IN (${new Array(req.body.AnalysisNeighborhood.length).fill('?').join(',')})`;
+    console.log(sql)
+    params = params.concat(req.body.AnalysisNeighborhood)
+    console.log(params)
   }
-  res.json(r)
-})
+  
+
+  sql = sql + " LIMIT 1000"
+  db.all(sql, params, (err, rows) =>{
+
+    console.log('db.all called');
+    console.log(rows.length)
+    if (err) {
+      res.status(400).json({"error":err.message});
+      return;
+    }
+    res.json({
+        "message":"success",
+        "data":rows
+    })
+  });
+ })
+
+
 module.exports = app

@@ -1,5 +1,6 @@
 # Big files
 /api/data/Police_Department_Incident_Reports__2018_to_Present.csv
+api/data/incidents.db
 
 # Logs
 logs
