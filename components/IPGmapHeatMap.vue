@@ -15,21 +15,32 @@ export default {
       layerLoaded: false,
     }
   },
+  watch: {
+    points(value) {
+      // eslint-disable-next-line no-console
+      console.log(value)
+      this.init()
+    },
+  },
   methods: {
     init() {
-      this.layer = null
-      this.layerLoaded = false
       const google = this.$parent.google
       const hmd = []
       this.points.forEach((h) => {
-        hmd.push(new google.maps.LatLng(h[0], h[1]))
+        hmd.push(new google.maps.LatLng(h.lat, h.lng))
       })
-      this.layer = new this.$parent.google.maps.visualization.HeatmapLayer({
-        data: hmd,
-        map: this.$parent.map,
-      })
-
-      this.$parent.layers.push(this.layer)
+      if (!this.layerLoaded) {
+        this.layer = new this.$parent.google.maps.visualization.HeatmapLayer({
+          map: this.$parent.map,
+          dissipating: true,
+          radius: 25,
+          maxIntensity: 5,
+          gradient: ['rgba(255, 0, 0, 0)', 'rgba(255, 0, 0, 255)'],
+        })
+        this.$parent.layers.push(this.layer)
+        this.layerLoaded = true
+      }
+      this.layer.setData(hmd)
       this.layerLoaded = true
     },
   },

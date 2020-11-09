@@ -12,7 +12,7 @@ export default {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
-
+  serverMiddleware: [{ path: '/api', handler: '~/api/index.js' }],
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: ['~/assets/css/main.css'],
 
@@ -37,7 +37,9 @@ export default {
   ],
 
   // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {},
+  axios: {
+    baseURL: 'http://localhost:3000',
+  },
 
   // Vuetify module configuration (https://go.nuxtjs.dev/config-vuetify)
   vuetify: {

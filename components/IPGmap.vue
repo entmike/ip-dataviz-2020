@@ -1,6 +1,13 @@
 <template>
   <div class="GMap">
-    <div ref="map" class="GMap__Wrapper"></div>
+    <div
+      ref="map"
+      :class="{ GMap__Wrapper: true, noPano: !showStreetview }"
+    ></div>
+    <div
+      ref="pano"
+      :class="{ GMap__Pano_Wrapper: true, noPano: !showStreetview }"
+    ></div>
     <slot name="markers" />
     <slot name="layers" />
   </div>
@@ -10,6 +17,12 @@ import GoogleMapsApiLoader from 'google-maps-api-loader'
 // const MarkerClusterer = require('node-js-marker-clusterer')
 export default {
   props: {
+    showStreetview: {
+      type: Boolean,
+      default: () => {
+        return false
+      },
+    },
     clickableIcons: {
       type: Boolean,
       default: () => {
@@ -87,6 +100,26 @@ export default {
       ],
     }
   },
+  watch: {
+    clickableIcons(value) {
+      // eslint-disable-next-line no-console
+      if (this.GMaps.loaded)
+        this.map.setOptions({
+          clickableIcons: value,
+        })
+    },
+    showStreetview(value) {
+      if (this.map) {
+        if (value === false) {
+          this.map.setStreetView(null)
+          this.panorama = null
+        } else {
+          this.initPanorama()
+          this.map.setStreetView(this.panorama)
+        }
+      }
+    },
+  },
   async mounted() {
     if (this.GMaps.loaded === false) {
       this.GMaps.loaded = true
@@ -95,6 +128,7 @@ export default {
           apiKey: this.apiKey,
           // language: this.language,
           libraries: ['visualization'],
+          version: 'weekly',
         }
         if (this.GMaps.libraries !== undefined) {
           GMapSettings.libraries = this.GMaps.libraries
@@ -119,11 +153,25 @@ export default {
         clickableIcons: this.clickableIcons,
         ...this.options,
       })
+      this.initPanorama()
+      this.map.setStreetView(this.panorama)
+
       this.initChildren()
       this.events.forEach((event) => {
         this.map.addListener(event, (e) => {
           this.$emit(event, { map: this.map, event: e })
         })
+      })
+    },
+    initPanorama() {
+      this.panorama = new this.google.maps.StreetViewPanorama(this.$refs.pano, {
+        position: this.center,
+        enableCloseButton: true,
+        disableDefaultUI: true,
+      })
+      this.panorama.addListener('visible_changed', () => {
+        // Dirty hack
+        this.$parent.enableStreetView = this.panorama.visible
       })
     },
     initChildren() {
@@ -153,8 +201,21 @@ export default {
 }
 </script>
 <style>
-.GMap__Wrapper {
-  width: 100%;
+.GMap__Wrapper,
+.GMap__Pano_Wrapper {
+  float: left;
+  /* height: 100%; */
+  width: 50%;
   height: 600px;
 }
+.GMap__Wrapper.noPano {
+  width: 100%;
+}
+.GMap__Pano_Wrapper.noPano {
+  display: none;
+}
+/* .GMap__Wrapper {
+  width: 100%;
+  height: 600px;
+} */
 </style>
