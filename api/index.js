@@ -6,6 +6,28 @@ const db = require('./database.js')
 app.use(bodyParser.json())
 
 /**
+ * Super Lazy SQL API method
+ *
+ * @param {*} req
+ * @param {*} res
+ */
+const sqlAPI = (req, res) => {
+  const sql = req.body.sql
+  console.log(sql)
+  db.all(sql, (err, rows) => {
+    console.log(sql)
+    if (err) {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    console.log(`Returning ${rows.length} records`)
+    res.json({
+      message: 'success',
+      data: rows,
+    })
+  })
+}
+/**
  * 
  * Example request object
   {
@@ -112,5 +134,6 @@ const getJSON = (req, res) => {
 app.all('/getJSON', getJSON)
 app.all('/getCrimes', getJSON)
 app.all('/select', selectAPI)
+app.all('/sql', sqlAPI)
 
 module.exports = app

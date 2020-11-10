@@ -11,6 +11,7 @@
       v-model="enableStreetView"
       :label="`Toggle Street View`"
     ></v-switch>
+    <v-select :items="neighborhoodLocs" label="Standard"></v-select>
     <v-text-field ref="searchBox" placeholder="Seach Maps" />
     <IPGmap
       api-key="AIzaSyBnJ5jl0UqbTRJqe1uJEVj_J3OmZTRQRkc"
@@ -62,6 +63,7 @@ export default {
       // home: { lat: 37.7749, lng: -122.4194 },
       enablePOI: false,
       neighborhoods: {},
+      neighborhoodLocs: [],
       enableStreetView: false,
       home: { lat: 37.774546, lng: -122.433523 },
       zoom: 12,
@@ -106,18 +108,30 @@ export default {
     },
     async fetchData() {
       console.log('Fetching Data...')
-      this.points = await fetch(this.$axios.defaults.baseURL + '/api/getJSON')
-        .then((res) => {
-          return res.json()
+      this.points = await this.$axios
+        .post(this.$axios.defaults.baseURL + '/api/sql', {
+          sql:
+            'SELECT "Incident ID","Incident Category","Incident Description","Latitude","Longitude" FROM incidents LIMIT 25000',
         })
         .then((d) => {
-          const data = d.data
-          data.map((e) => {
+          d.data.data.map((e) => {
             e.Latitude = parseFloat(e.Latitude)
             e.Longitude = parseFloat(e.Longitude)
           })
-          return data
+          return d.data.data
         })
+      const l = await this.$axios.post(
+        this.$axios.defaults.baseURL + '/api/sql',
+        {
+          sql:
+            "SELECT DISTINCT [Analysis Neighborhood] FROM incidents WHERE [Analysis Neighborhood] != ''",
+        }
+      )
+      const locs = []
+      l.data.data.map((l) => {
+        locs.push(l['Analysis Neighborhood'])
+      })
+      this.neighborhoodLocs = locs
       console.log(`${this.points.length} points loaded`)
       this.neighborhoods = await fetch(
         this.$axios.defaults.baseURL + '/san-francisco-neighborhoods.geojson'
