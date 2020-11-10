@@ -29,6 +29,7 @@ app.use(bodyParser.json())
 const selectAPI = (req, res) => {
   let fields = '*'
   let groupby = ''
+  let limit = ''
   if (req.body.fields !== undefined) {
     fields = []
     req.body.fields.map((f) => {
@@ -54,7 +55,8 @@ const selectAPI = (req, res) => {
     })
     sql += ` AND "${filter}" IN (${values.join(',')})`
   }
-  sql = `${sql} ${groupby} LIMIT 1000`
+  if (req.body.limit !== undefined) limit = `LIMIT ${req.body.limit}`
+  sql = `${sql} ${groupby} ${limit}`
   console.log(sql)
   db.all(sql, (err, rows) => {
     console.log(sql)
