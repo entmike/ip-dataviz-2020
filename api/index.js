@@ -42,7 +42,7 @@ const selectAPI = (req, res) => {
     req.body.groupby.map((f) => {
       groups.push(`[${f}]`)
     })
-    if (groups.length > 0) groupby = ` GROUP BY${groups.join(', ')}`
+    if (groups.length > 0) groupby = `GROUP BY ${groups.join(', ')}`
   }
   let sql = `SELECT ${fields} FROM incidents WHERE 1 = 1`
   for (const filter in req.body.filters) {
