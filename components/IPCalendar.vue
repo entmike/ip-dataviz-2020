@@ -25,7 +25,7 @@ export default {
       }
       const formatDay = (i) => 'SMTWTFS'[i]
       const formatDate = d3.utcFormat('%x')
-      const formatClose = d3.format('$,.2f')
+      const formatClose = d3.format(',')
       const formatValue = d3.format('+.2%')
       const pathMonth = (t) => {
         const n = weekday === 'weekday' ? 5 : 7
