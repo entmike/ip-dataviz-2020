@@ -174,6 +174,9 @@ export default {
         // Dirty hack
         this.$parent.enableStreetView = this.panorama.visible
       })
+      this.panorama.addListener('position_changed', () => {
+        this.$emit('position_changed', this.panorama.getPosition())
+      })
     },
     initChildren() {
       if (this.layers.length > 0) this.markers = []

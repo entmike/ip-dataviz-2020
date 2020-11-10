@@ -30,7 +30,7 @@ export default {
         if (!isNaN(h.Latitude) && !isNaN(h.Longitude))
           hmd.push(new google.maps.LatLng(h.Latitude, h.Longitude))
       })
-      console.log(hmd)
+      // console.log(hmd)
       if (!this.layerLoaded) {
         this.layer = new this.$parent.google.maps.visualization.HeatmapLayer({
           map: this.$parent.map,

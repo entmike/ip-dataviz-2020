@@ -20,6 +20,7 @@
       :show-streetview="enableStreetView"
       :clickable-icons="enablePOI"
       @loaded="fetchData()"
+      @position_changed="findCrime"
     >
       <template v-slot:markers>
         <IPGmapMarker
@@ -106,7 +107,49 @@ export default {
       // console.log(this.$refs.searchBox.$el)
       return this.$refs.searchBox.$refs.input
     },
+    async findCrime(e) {
+      const R = 6371e3 // earth's mean radius in metres
+      const sin = Math.sin
+      const cos = Math.cos
+      const acos = Math.acos
+      const π = Math.PI
+
+      const lat = e.lat()
+      const lon = e.lng()
+      const radius = 100 // Meters
+
+      const params = {
+        minLat: lat - ((radius / R) * 180) / π,
+        maxLat: lat + ((radius / R) * 180) / π,
+        minLon: lon - ((radius / R) * 180) / π / cos((lat * π) / 180),
+        maxLon: lon + ((radius / R) * 180) / π / cos((lat * π) / 180),
+      }
+      const sql = `SELECT "Incident ID","Incident Category","Incident Description","Latitude","Longitude"
+          FROM incidents
+          WHERE CAST("Latitude" AS DECIMAL) BETWEEN ${params.minLat} AND ${params.maxLat}
+          AND CAST("Longitude" AS DECIMAL) BETWEEN ${params.minLon} AND ${params.maxLon}`
+
+      const crimes = await this.$axios.post(
+        this.$axios.defaults.baseURL + '/api/sql',
+        {
+          sql,
+        }
+      )
+
+      crimes.data.data.forEach((p) => {
+        p.d =
+          acos(
+            sin((p.Latitude * π) / 180) * sin((lat * π) / 180) +
+              cos((p.Latitude * π) / 180) *
+                cos((lat * π) / 180) *
+                cos((p.Longitude * π) / 180 - (lon * π) / 180)
+          ) * R
+      })
+      // eslint-disable-next-line no-console
+      console.log(crimes.data.data)
+    },
     async fetchData() {
+      // eslint-disable-next-line no-console
       console.log('Fetching Data...')
       this.points = await this.$axios
         .post(this.$axios.defaults.baseURL + '/api/sql', {
@@ -132,6 +175,7 @@ export default {
         locs.push(l['Analysis Neighborhood'])
       })
       this.neighborhoodLocs = locs
+      // eslint-disable-next-line no-console
       console.log(`${this.points.length} points loaded`)
       this.neighborhoods = await fetch(
         this.$axios.defaults.baseURL + '/san-francisco-neighborhoods.geojson'
