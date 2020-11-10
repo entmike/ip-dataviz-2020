@@ -145,8 +145,12 @@ export default {
                 cos((p.Longitude * π) / 180 - (lon * π) / 180)
           ) * R
       })
+
+      const pointsWithinCircle = crimes.data.data
+        .filter((p) => p.d < radius)
+        .sort((a, b) => a.d - b.d)
       // eslint-disable-next-line no-console
-      console.log(crimes.data.data)
+      console.log(pointsWithinCircle)
     },
     async fetchData() {
       // eslint-disable-next-line no-console
