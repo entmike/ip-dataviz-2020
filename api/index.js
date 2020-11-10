@@ -5,6 +5,70 @@ const db = require('./database.js')
 
 app.use(bodyParser.json())
 
+/**
+ * 
+ * Example request object
+  {
+    "fields" : ["Incident ID","Incident Category","Incident Description","Latitude","Longitude"],
+    "filters":{
+        "Analysis Neighborhood" : {"values":["South of Market","Bayview Hunters Point"],"type":"c"},
+        "Incident Date" : {"values":["2018/01/01"], "type":"c"}
+    }
+  }
+
+  Example with GROUP BY
+  {
+    "fields" : [Incident Category", "~COUNT(*)"],
+    "groupby" : ["Incident Category"],
+    "filters":{
+        "Analysis Neighborhood" : {"values":["South of Market","Bayview Hunters Point"],"type":"c"},
+        "Incident Date" : {"values":["2018/01/01"], "type":"c"}
+    }
+}
+ */
+const selectAPI = (req, res) => {
+  let fields = '*'
+  let groupby = ''
+  if (req.body.fields !== undefined) {
+    fields = []
+    req.body.fields.map((f) => {
+      if (f[0] !== '~') fields.push(`[${f}]`)
+      else fields.push(`${f.substring(1)}`)
+    })
+    fields = fields.join(', ')
+  }
+  if (req.body.groupby !== undefined) {
+    const groups = []
+    req.body.groupby.map((f) => {
+      groups.push(`[${f}]`)
+    })
+    if (groups.length > 0) groupby = ` GROUP BY${groups.join(', ')}`
+  }
+  let sql = `SELECT ${fields} FROM incidents WHERE 1 = 1`
+  for (const filter in req.body.filters) {
+    console.log(filter)
+    const values = []
+    req.body.filters[filter].values.map((v) => {
+      if (req.body.filters[filter].type === 'c') values.push(`"${v}"`)
+      else values.push(v)
+    })
+    sql += ` AND "${filter}" IN (${values.join(',')})`
+  }
+  sql = `${sql} ${groupby} LIMIT 1000`
+  console.log(sql)
+  db.all(sql, (err, rows) => {
+    console.log(sql)
+    if (err) {
+      res.status(400).json({ error: err.message })
+      return
+    }
+    console.log(`Returning ${rows.length} records`)
+    res.json({
+      message: 'success',
+      data: rows,
+    })
+  })
+}
 // Declare function so I can use in 2 routes
 const getJSON = (req, res) => {
   console.log('getJSON called')
@@ -45,5 +109,6 @@ const getJSON = (req, res) => {
 
 app.all('/getJSON', getJSON)
 app.all('/getCrimes', getJSON)
+app.all('/select', selectAPI)
 
 module.exports = app

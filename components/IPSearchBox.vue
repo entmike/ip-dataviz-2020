@@ -2,7 +2,7 @@
 export default {
   props: {
     searchBox: {
-      // type: [Object, HTMLInputElement],
+      type: [HTMLInputElement],
       default: () => {
         return null
       },
