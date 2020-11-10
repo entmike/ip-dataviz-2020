@@ -17,12 +17,6 @@ import GoogleMapsApiLoader from 'google-maps-api-loader'
 // const MarkerClusterer = require('node-js-marker-clusterer')
 export default {
   props: {
-    searchBox: {
-      type: Object,
-      default: () => {
-        return null
-      },
-    },
     showStreetview: {
       type: Boolean,
       default: () => {

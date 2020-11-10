@@ -27,15 +27,21 @@ export default {
       const google = this.$parent.google
       const hmd = []
       this.points.forEach((h) => {
-        hmd.push(new google.maps.LatLng(h.lat, h.lng))
+        if (!isNaN(h.Latitude) && !isNaN(h.Longitude))
+          hmd.push(new google.maps.LatLng(h.Latitude, h.Longitude))
       })
+      console.log(hmd)
       if (!this.layerLoaded) {
         this.layer = new this.$parent.google.maps.visualization.HeatmapLayer({
           map: this.$parent.map,
           dissipating: true,
-          radius: 25,
+          radius: 10,
           maxIntensity: 5,
-          gradient: ['rgba(255, 0, 0, 0)', 'rgba(255, 0, 0, 255)'],
+          gradient: [
+            'rgba(255, 255, 0, 0)',
+            'rgba(255, 128, 0, 255)',
+            'rgba(255, 0, 0, 255)',
+          ],
         })
         this.$parent.layers.push(this.layer)
         this.layerLoaded = true

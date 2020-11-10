@@ -12,7 +12,10 @@ export default {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
+
+  // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware
   serverMiddleware: [{ path: '/api', handler: '~/api/index.js' }],
+
   // Global CSS (https://go.nuxtjs.dev/config-css)
   css: ['~/assets/css/main.css'],
 

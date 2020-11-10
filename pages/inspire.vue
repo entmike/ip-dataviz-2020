@@ -11,19 +11,13 @@
       v-model="enableStreetView"
       :label="`Toggle Street View`"
     ></v-switch>
-    <input
-      ref="pac-input"
-      class="controls"
-      type="text"
-      placeholder="Search Box"
-    />
+    <v-text-field ref="searchBox" placeholder="Seach Maps" />
     <IPGmap
       api-key="AIzaSyBnJ5jl0UqbTRJqe1uJEVj_J3OmZTRQRkc"
       :center="home"
       :zoom="zoom"
       :show-streetview="enableStreetView"
       :clickable-icons="enablePOI"
-      :search-box="mySearch"
       @loaded="fetchData()"
     >
       <template v-slot:markers>
@@ -37,7 +31,7 @@
           }"
           @click="currentLocation = location"
         />
-        <IPSearchBox />
+        <IPSearchBox :search-box="mySearch()" />
       </template>
       <template v-slot:layers>
         <IPGmapHeatMap :points="points" />
@@ -107,17 +101,31 @@ export default {
   },
   methods: {
     mySearch() {
-      return this.refs['pac-input']
+      // console.log(this.$refs.searchBox.$el)
+      return this.$refs.searchBox.$refs.input
     },
     async fetchData() {
       console.log('Fetching Data...')
-      this.points = await fetch(
-        this.$axios.defaults.baseURL + '/api/getCrimes'
-      ).then((res) => res.json())
-
+      this.points = await fetch(this.$axios.defaults.baseURL + '/api/getJSON')
+        .then((res) => {
+          return res.json()
+        })
+        .then((d) => {
+          const data = d.data
+          data.map((e) => {
+            e.Latitude = parseFloat(e.Latitude)
+            e.Longitude = parseFloat(e.Longitude)
+          })
+          return data
+        })
+      console.log(`${this.points.length} points loaded`)
       this.neighborhoods = await fetch(
         this.$axios.defaults.baseURL + '/san-francisco-neighborhoods.geojson'
-      ).then((res) => res.json())
+      )
+        .then((res) => res.json())
+        .then((d) => {
+          return d
+        })
     },
   },
 }
