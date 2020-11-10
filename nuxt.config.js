@@ -11,6 +11,7 @@ export default {
       { hid: 'description', name: 'description', content: '' },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+    script,
   },
 
   // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-servermiddleware

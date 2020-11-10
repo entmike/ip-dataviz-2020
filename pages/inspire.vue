@@ -40,6 +40,7 @@
         <IPGmapAreaLayer :shape="neighborhoods" />
       </template>
     </IPGmap>
+    <IPCalendar />
   </div>
 </template>
 <script>
@@ -48,6 +49,7 @@ import IPGmapMarker from '~/components/IPGmapMarker.vue'
 import IPGmapHeatMap from '~/components/IPGmapHeatMap.vue'
 import IPGmapAreaLayer from '~/components/IPGmapAreaLayer.vue'
 import IPSearchBox from '~/components/IPSearchBox.vue'
+import IPCalendar from '~/components/IPCalendar.vue'
 
 export default {
   name: 'DataViz',
@@ -57,6 +59,7 @@ export default {
     IPGmapHeatMap,
     IPGmapAreaLayer,
     IPSearchBox,
+    IPCalendar,
   },
   data() {
     return {

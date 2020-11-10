@@ -57,7 +57,7 @@
       </v-list>
     </v-navigation-drawer>
     <v-footer :absolute="!fixed" app>
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+      <span>&copy; International Paper {{ new Date().getFullYear() }}</span>
     </v-footer>
   </v-app>
 </template>
@@ -80,11 +80,21 @@ export default {
           title: 'Inspire',
           to: '/inspire',
         },
+        {
+          icon: 'mdi-chart-bubble',
+          title: 'D3 Test Page',
+          to: '/d3test',
+        },
+        {
+          icon: 'mdi-chart-bubble',
+          title: 'Crime Calendar',
+          to: '/d3calendar',
+        },
       ],
       miniVariant: false,
       right: true,
       rightDrawer: false,
-      title: 'Vuetify.js',
+      title: 'IP 2020 Viz Competition',
     }
   },
 }
