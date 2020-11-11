@@ -7,12 +7,40 @@ import * as d3 from 'd3'
 // import { legend } from '@d3/color-legend'
 
 export default {
+  props: {
+    data: {
+      type: Array,
+      default() {
+        return []
+      },
+    },
+  },
+  watch: {
+    data(newValue, oldValue) {
+      console.log('new calendar data')
+      this.renderCalendar()
+    },
+  },
   /* eslint-disable no-unused-vars */
   mounted() {
-    this.loadData().then((data) => {
+    this.renderCalendar()
+  },
+
+  methods: {
+    renderCalendar() {
       const weekday = 'sunday'
       const cellSize = 17
       //   console.log(data)
+      const data = d3.pairs(
+        this.data,
+        ({ Close: Previous }, { Date, Close }) => {
+          return {
+            date: new window.Date(Date),
+            value: (Close - Previous) / Previous,
+            close: Close,
+          }
+        }
+      )
       const avgIncidents = d3.mean(data, function (d) {
         return d.close
       })
@@ -138,10 +166,14 @@ ${formatClose(d.close)} incidents`
 
         return svg.node()
       }
-      this.$refs.viz.appendChild(chart())
-    })
-  },
-  methods: {
+      d3.select(this.$refs.viz)
+        .html(null) // Clean out prior renders.
+        .data([chart()])
+        .append((d) => {
+          return d
+        })
+      // this.$refs.viz.appendChild(chart())
+    },
     async loadData() {
       // const data = await d3.csv('/data/dow.csv').then((data) => {
       return await this.$axios
