@@ -13,20 +13,22 @@ export default {
       const weekday = 'sunday'
       const cellSize = 17
       //   console.log(data)
+      const avgIncidents = d3.mean(data, function (d) {
+        return d.close
+      })
       const color = () => {
         const max = d3.quantile(
-          data.map((d) => Math.abs(d.value)).sort(d3.ascending),
-          0.9975
+          data.map((d) => Math.abs(d.close / avgIncidents)).sort(d3.ascending),
+          0
         )
         return d3.scaleSequential(d3.interpolateRdYlGn).domain([+max, -max])
       }
-      const formatMonth = () => {
-        d3.utcFormat('%b')
-      }
+
       const formatDay = (i) => 'SMTWTFS'[i]
       const formatDate = d3.utcFormat('%x')
       const formatClose = d3.format(',')
       const formatValue = d3.format('+.2%')
+      const formatMonth = d3.utcFormat('%b')
       const pathMonth = (t) => {
         const n = weekday === 'weekday' ? 5 : 7
         const d = Math.max(0, Math.min(n, countDay(t.getUTCDay())))
@@ -43,7 +45,7 @@ export default {
       const timeWeek = weekday === 'sunday' ? d3.utcSunday : d3.utcMonday
       const height = cellSize * (weekday === 'weekday' ? 7 : 9)
       const width = 954
-      console.log(data)
+      // console.log(data)
       const years = d3.groups(data, (d) => d.date.getUTCFullYear()).reverse()
       // eslint-disable-next-line no-unused-vars
       const chart = () => {
@@ -102,12 +104,7 @@ export default {
           .append('title')
           .text(
             (d) => `${formatDate(d.date)}
-${formatValue(d.value)}${
-              d.close === undefined
-                ? ''
-                : `
-${formatClose(d.close)}`
-            }`
+${formatClose(d.close)} incidents`
           )
 
         const month = year
@@ -157,7 +154,7 @@ ${formatClose(d.close)}`
         })
         .then((res) => {
           const data = res.data.data
-          console.log(data)
+          // console.log(data)
           return d3.pairs(data, ({ Close: Previous }, { Date, Close }) => {
             return {
               date: new window.Date(Date),
