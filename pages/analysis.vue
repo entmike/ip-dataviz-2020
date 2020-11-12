@@ -5,7 +5,9 @@
     <!-- <span>{{ neighborhoods }}</span> -->
     <v-tabs v-model="tabs">
       <v-tabs-slider></v-tabs-slider>
-      <v-tab> About</v-tab><v-tab>Options</v-tab>
+      <v-tab>About the Map</v-tab>
+      <v-tab>About the Calendar</v-tab>
+      <v-tab>Mapping Options</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tabs">
       <v-tab-item>
@@ -33,6 +35,19 @@
             </v-card>
           </v-col>
         </v-row>
+      </v-tab-item>
+      <v-tab-item>
+        <v-card>
+          <v-card-title class="headline">About</v-card-title>
+          <v-card-subtitle>Calendar Visualization</v-card-subtitle>
+          <v-card-text>
+            <div class="text--primary">
+              The calendar shows the number of incidents on a given day and
+              visualizes changes in incidents over time along with periods of
+              high and low activity
+            </div>
+          </v-card-text>
+        </v-card>
       </v-tab-item>
       <v-tab-item>
         <v-expansion-panels v-model="panelsState" multiple :accordion="true">
@@ -188,6 +203,7 @@
         />
       </template>
     </IPGmap>
+    <IPCalendar :data="calendarData" />
   </div>
 </template>
 <script>
@@ -196,6 +212,7 @@ import IPGmap from '~/components/IPGmap.vue'
 import IPGmapHeatMap from '~/components/IPGmapHeatMap.vue'
 import IPGmapAreaLayer from '~/components/IPGmapAreaLayer.vue'
 import IPSearchBox from '~/components/IPSearchBox.vue'
+import IPCalendar from '~/components/IPCalendar.vue'
 
 export default {
   name: 'DataViz',
@@ -205,6 +222,7 @@ export default {
     IPGmapHeatMap,
     IPGmapAreaLayer,
     IPSearchBox,
+    IPCalendar,
   },
   data() {
     return {
@@ -278,6 +296,11 @@ export default {
       if (this.$store.state.datasets && this.$store.state.datasets.points)
         return this.$store.state.datasets.points
       else return []
+    },
+    calendarData: {
+      get() {
+        return this.$store.state.datasets.calData
+      },
     },
     // measures() {
     //   if (

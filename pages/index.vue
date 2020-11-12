@@ -28,6 +28,15 @@
                 Police Department Calls for Service
               </a>
             </li>
+            <li>
+              <a
+                href="https://sfplanning.org/resource/san-francisco-neighborhoods-socio-economic-profiles-2012-2016"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Census Data
+              </a>
+            </li>
           </p>
           <p>
             Team:
@@ -51,7 +60,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" nuxt to="/geo"> Continue </v-btn>
+          <v-btn color="primary" nuxt to="/analysis"> Continue </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>

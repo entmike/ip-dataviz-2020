@@ -13,7 +13,7 @@
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
-      :clipped="clipped"
+      clipped
       fixed
       app
     >
@@ -34,14 +34,11 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-app-bar :clipped-left="clipped" clipped-right fixed app>
+    <v-app-bar clipped-left clipped-right fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn icon @click.stop="miniVariant = !miniVariant">
+      <!-- <v-btn icon @click.stop="miniVariant = !miniVariant">
         <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="clipped = !clipped">
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
+      </v-btn> -->
       <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn icon @click.stop="rightDrawer = !rightDrawer">
@@ -91,6 +88,22 @@
             "
           ></v-select>
         </v-list-item>
+        <v-list-item>
+          <v-select
+            ref="filterPoliceDistricts"
+            :v-model="filterValues.policeDistricts"
+            deletable-chips
+            chips
+            multiple
+            :items="filterDimensions.policeDistricts"
+            label="Police District"
+            @input="
+              (v) => {
+                filterValues['Police District'] = v
+              }
+            "
+          ></v-select>
+        </v-list-item>
         <v-list-item
           ><v-text-field
             v-model="dateRangeText"
@@ -122,12 +135,14 @@
           v-if="
             JSON.stringify(activeFilterValues) !== JSON.stringify(filterValues)
           "
+          color="primary"
           @click="apply"
           >Apply</v-btn
-        ><v-btn
+        ><v-spacer /><v-btn
           v-if="
             JSON.stringify(activeFilterValues) !== JSON.stringify(filterValues)
           "
+          color="error"
           @click="revert"
           >Revert</v-btn
         ></v-footer
@@ -155,18 +170,20 @@ export default {
       home: { lat: 37.774546, lng: -122.433523 },
       isLoading: false,
       clipped: false,
-      drawer: false,
+      drawer: true,
       fixed: false,
       revertVisible: false,
       filterDimensions: {
         'Analysis Neighborhood': [],
         'Incident Category': [],
         'Incident Date': [],
+        'Police District': [],
       },
       filterValues: {
         'Analysis Neighborhood': [],
         'Incident Category': [],
         'Incident Date': [],
+        'Police District': [],
       },
       activeFilterValues: {},
       items: [
@@ -177,19 +194,19 @@ export default {
         },
         {
           icon: 'mdi-google-maps',
-          title: 'Geo-Analysis',
-          to: '/geo',
+          title: 'Analysis',
+          to: '/analysis',
         },
         // {
         //   icon: 'mdi-chart-bubble',
         //   title: 'D3 Test Page',
         //   to: '/d3test',
         // },
-        {
-          icon: 'mdi-calendar',
-          title: 'Crime Calendar',
-          to: '/d3calendar',
-        },
+        // {
+        //   icon: 'mdi-calendar',
+        //   title: 'Crime Calendar',
+        //   to: '/d3calendar',
+        // },
       ],
       miniVariant: false,
       rightDrawer: false,
@@ -340,7 +357,7 @@ export default {
       // Get Neighborhoods
       let r = await this.$axios.post('/api/sql', {
         sql:
-          "SELECT DISTINCT [Analysis Neighborhood] FROM incidents WHERE [Analysis Neighborhood] != ''",
+          "SELECT DISTINCT [Analysis Neighborhood] FROM incidents WHERE [Analysis Neighborhood] != '' ORDER BY [Analysis Neighborhood] ASC",
       })
       const locs = []
       r.data.data.map((l) => {
@@ -351,13 +368,26 @@ export default {
       // Get Incident Categories
       r = await this.$axios.post('/api/sql', {
         sql:
-          "SELECT DISTINCT [Incident Category] FROM incidents WHERE [Incident Category] != ''",
+          "SELECT DISTINCT [Incident Category] FROM incidents WHERE [Incident Category] != '' ORDER BY [Incident Category] ASC",
       })
       const incs = []
       r.data.data.map((l) => {
         incs.push(l['Incident Category'])
       })
       this.filterDimensions.incidentCategories = incs
+
+      // Get Police Districts
+      // Get Neighborhoods
+      const pd = await this.$axios.post('/api/sql', {
+        sql:
+          "SELECT DISTINCT [Police District] FROM incidents WHERE [Police District] != '' ORDER BY [Police District] ASC",
+      })
+      const pds = []
+      pd.data.data.map((l) => {
+        pds.push(l['Police District'])
+      })
+      this.filterDimensions.policeDistricts = pds
+
       // Get Census data
       // Get Incident Categories
       const census = await this.$axios.post('/api/sql', {
