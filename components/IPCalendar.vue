@@ -41,15 +41,25 @@ export default {
           }
         }
       )
-      const avgIncidents = d3.mean(data, function (d) {
+      const minIncidents = d3.min(data, function (d) {
+        return d.close
+      })
+      const maxIncidents = d3.max(data, function (d) {
+        return d.close
+      })
+      const avgIncidents = d3.max(data, function (d) {
         return d.close
       })
       const color = () => {
-        const max = d3.quantile(
-          data.map((d) => Math.abs(d.close / avgIncidents)).sort(d3.ascending),
-          0
-        )
-        return d3.scaleSequential(d3.interpolateRdYlGn).domain([+max, -max])
+        const closeValues = data
+          .map((d) => Math.abs(d.close))
+          .sort(d3.ascending)
+        const min = d3.quantile(closeValues, 0.02)
+        const max = d3.quantile(closeValues, 0.98)
+
+        return d3
+          .scaleSequential(d3.interpolateRgbBasis(['white', 'orange', 'red']))
+          .domain([min, max])
       }
 
       const formatDay = (i) => 'SMTWTFS'[i]
@@ -128,7 +138,7 @@ export default {
             (d) => timeWeek.count(d3.utcYear(d.date), d.date) * cellSize + 0.5
           )
           .attr('y', (d) => countDay(d.date.getUTCDay()) * cellSize + 0.5)
-          .attr('fill', (d) => color()(d.value))
+          .attr('fill', (d) => color()(d.close))
           .append('title')
           .text(
             (d) => `${formatDate(d.date)}
@@ -150,7 +160,7 @@ ${formatClose(d.close)} incidents`
           .filter((d, i) => i)
           .append('path')
           .attr('fill', 'none')
-          .attr('stroke', '#fff')
+          .attr('stroke', '#000')
           .attr('stroke-width', 3)
           .attr('d', pathMonth)
 
