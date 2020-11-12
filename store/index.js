@@ -4,27 +4,31 @@ export const state = () => ({
     points: [],
     calData: [],
   },
+  radius: 1000,
   home: { lat: 37.774546, lng: -122.433523 },
   pegman: { lat: 37.774546, lng: -122.433523 },
   usePegman: false,
+  neighborhoods: {},
 })
 
 export const mutations = {
   setDatasets(state, datasets) {
-    console.log(datasets)
     state.datasets = datasets
   },
   setUsePegman(state, val) {
-    console.log(val)
     state.usePegman = val
   },
   setHome(state, home) {
-    console.log(home)
     state.datasets = home
   },
   setPegman(state, val) {
-    console.log(val)
     state.pegman = val
+  },
+  setNeighborhoods(state, val) {
+    state.neighborhoods = val
+  },
+  setRadius(state, val) {
+    state.radius = val
   },
 }
 
@@ -40,5 +44,11 @@ export const getters = {
   },
   getUsePegman(state) {
     return state.usePegman
+  },
+  getNeighborhoods(state) {
+    return state.neighborhoods
+  },
+  getRadius(state) {
+    return state.radius
   },
 }

@@ -7,40 +7,58 @@ export default {
         return {}
       },
     },
+    visible: {
+      type: Boolean,
+      default() {
+        return true
+      },
+    },
   },
   watch: {
     shape(value) {
+      this.init()
+    },
+    visible(value) {
+      console.log('visibility changed to ' + value)
       this.init()
     },
   },
   methods: {
     init() {
       // Ignore initial empty object
-      if (JSON.stringify(this.shape) !== '{}') {
-        // eslint-disable-next-line no-console
+      if (this.visible) {
+        if (JSON.stringify(this.shape) !== '{}') {
+          // eslint-disable-next-line no-console
+          const map = this.$parent.map
+          this.layer = this.$parent.map.data.addGeoJson(this.shape, {
+            idPropertyName: 'neighborhood',
+          })
+          this.$parent.map.data.setStyle((feature) => {
+            return {
+              strokeWeight: 1,
+              strokeColor: '#009966',
+              fillColor: '#009966',
+            }
+          })
+          // Examples
+          this.$parent.map.data.addListener('click', (event) => {
+            map.data.overrideStyle(event.feature, { fillColor: 'red' })
+          })
+          // When the user hovers, tempt them to click by outlining the letters.
+          // Call revertStyle() to remove all overrides. This will use the style rules
+          // defined in the function passed to setStyle()
+          map.data.addListener('mouseover', function (event) {
+            map.data.revertStyle()
+            map.data.overrideStyle(event.feature, { strokeWeight: 3 })
+          })
+          console.log(this.layer)
+        }
+      } else if (this.layer !== undefined) {
         const map = this.$parent.map
-        this.layer = this.$parent.map.data.addGeoJson(this.shape, {
-          idPropertyName: 'neighborhood',
+        map.data.forEach(function (feature) {
+          map.data.remove(feature)
         })
-        this.$parent.map.data.setStyle((feature) => {
-          return {
-            strokeWeight: 1,
-            strokeColor: '#009966',
-            fillColor: '#009966',
-          }
-        })
-        // Examples
-        this.$parent.map.data.addListener('click', (event) => {
-          map.data.overrideStyle(event.feature, { fillColor: 'red' })
-        })
-        // When the user hovers, tempt them to click by outlining the letters.
-        // Call revertStyle() to remove all overrides. This will use the style rules
-        // defined in the function passed to setStyle()
-        map.data.addListener('mouseover', function (event) {
-          map.data.revertStyle()
-          map.data.overrideStyle(event.feature, { strokeWeight: 3 })
-        })
-        console.log(this.layer)
+        delete this.layer
       }
     },
   },

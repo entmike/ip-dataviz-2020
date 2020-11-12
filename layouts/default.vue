@@ -44,7 +44,13 @@
         <nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer v-model="rightDrawer" right clipped fixed app
+    <v-navigation-drawer
+      v-model="rightDrawer"
+      right
+      clipped
+      fixed
+      app
+      :width="350"
       ><v-list>
         <v-list-item>
           <v-select
@@ -76,6 +82,30 @@
             "
           ></v-select>
         </v-list-item>
+        <v-list-item
+          ><v-text-field
+            v-model="dateRangeText"
+            label="Date range"
+            prepend-icon="mdi-calendar"
+            readonly
+          ></v-text-field
+        ></v-list-item>
+        <v-list-item>
+          <v-date-picker
+            v-model="dates"
+            range
+            width="100%"
+            no-title
+            min="2018-01-01"
+            :max="new Date().toISOString().slice(0, 10)"
+            :show-current="false"
+            @change="
+              (v) => {
+                filterValues['Incident Date'] = v
+              }
+            "
+          ></v-date-picker>
+        </v-list-item>
         <!-- <v-list-item>Pegman: {{ pegman }}</v-list-item> -->
       </v-list>
       <v-footer absolute>
@@ -98,12 +128,21 @@
 </template>
 
 <script>
+const today = new Date()
+const startDate = new Date()
+startDate.setDate(today.getDate() - 30)
+
 export default {
   data: () => {
     return {
       datasets: {
         points: [],
       },
+      dates: [
+        startDate.toISOString().slice(0, 10) + '',
+        today.toISOString().slice(0, 10) + '',
+      ],
+      neighborhoods: {},
       home: { lat: 37.774546, lng: -122.433523 },
       isLoading: false,
       clipped: false,
@@ -113,10 +152,12 @@ export default {
       filterDimensions: {
         'Analysis Neighborhood': [],
         'Incident Category': [],
+        'Incident Date': [],
       },
       filterValues: {
         'Analysis Neighborhood': [],
         'Incident Category': [],
+        'Incident Date': [],
       },
       activeFilterValues: {},
       items: [
@@ -147,29 +188,38 @@ export default {
     }
   },
   computed: {
+    dateRangeText() {
+      return this.dates.join(' - ')
+    },
     pegman() {
       return this.$store.state.pegman
     },
     usePegman() {
       return this.$store.state.usePegman
     },
+    radius() {
+      return this.$store.state.radius
+    },
   },
   watch: {
     datasets(newValue) {
-      console.log('change')
       this.$store.commit('setDatasets', newValue)
     },
+    neighborhoods(newValue) {
+      console.log(newValue)
+      this.$store.commit('setNeighborhoods', newValue)
+    },
     home(newValue) {
-      console.log('home change')
       this.$store.commit('setHome', newValue)
     },
-    isLoading(v) {
-      console.log(v)
-    },
+    isLoading(v) {},
     usePegman(newValue, oldValue) {
       this.refreshData()
     },
     pegman(newValue, oldValue) {
+      if (this.usePegman) this.refreshData()
+    },
+    radius(newValue, oldValue) {
       if (this.usePegman) this.refreshData()
     },
   },
@@ -191,16 +241,26 @@ export default {
       const d = JSON.parse(JSON.stringify(this.datasets))
       // Map Points
       let where = `WHERE 1=1`
+      let globalwhere = where
+
       for (const filterName in this.activeFilterValues) {
         if (this.activeFilterValues[filterName].length > 0) {
-          const vals = []
-          this.activeFilterValues[filterName].map((v) => {
-            vals.push(`'${v}'`)
-          })
-          where += ` AND [${filterName}] IN (${vals.join(', ')})`
+          if (filterName !== 'Incident Date') {
+            const vals = []
+            this.activeFilterValues[filterName].map((v) => {
+              vals.push(`'${v}'`)
+            })
+            where += ` AND [${filterName}] IN (${vals.join(', ')})`
+            globalwhere += ` AND [${filterName}] IN (${vals.join(', ')})`
+          } else {
+            const d1 = `julianday('${this.activeFilterValues[filterName][0]}')`
+            const d2 = `julianday('${this.activeFilterValues[filterName][1]}')`
+            where += ` AND julianday(REPLACE([Incident Date],'/','-')) BETWEEN ${d1} AND ${d2}`
+            // Do not add date filter to global where since calendar component doesn't need to be filtered.
+          }
         }
       }
-      const globalwhere = where
+
       const R = 6371e3 // earth's mean radius in metres
       const sin = Math.sin
       const cos = Math.cos
@@ -209,7 +269,7 @@ export default {
 
       const lat = this.pegman.lat
       const lon = this.pegman.lng
-      const radius = 1000 // Meters
+      const radius = this.radius // Meters
 
       const params = {
         minLat: lat - ((radius / R) * 180) / π,
@@ -290,6 +350,12 @@ export default {
         incs.push(l['Incident Category'])
       })
       this.filterDimensions.incidentCategories = incs
+      // Get GeoJSON
+      this.neighborhoods = await fetch('/san-francisco-neighborhoods.geojson')
+        .then((res) => res.json())
+        .then((d) => {
+          return d
+        })
       this.isLoading = false
     },
   },

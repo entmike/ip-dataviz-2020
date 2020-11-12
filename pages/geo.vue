@@ -3,28 +3,55 @@
     <!-- <v-btn @click="points = newPoints">Click Me</v-btn> -->
     <!-- <v-btn @click="fetchData()">Load Heatmap</v-btn> -->
     <!-- <span>{{ neighborhoods }}</span> -->
-    <v-container
-      ><v-row>
-        <v-col>
-          <v-switch
-            v-model="enablePOI"
-            :label="`Points of Interest`"
-          ></v-switch>
-        </v-col>
-        <v-col>
-          <v-switch
-            v-model="enableStreetView"
-            :label="`Street View`"
-          ></v-switch></v-col
-        ><v-col
-          ><v-switch
-            v-model="usePegman"
-            :label="`Pegman Filter`"
-          ></v-switch></v-col
-      ></v-row>
-    </v-container>
+    <v-expansion-panels v-model="panelsState" multiple :accordion="true">
+      <v-expansion-panel>
+        <v-expansion-panel-header
+          >Visualization Options</v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <v-container
+            ><v-row>
+              <v-col>
+                <v-switch
+                  v-model="enablePOI"
+                  :label="`Points of Interest`"
+                ></v-switch>
+              </v-col>
+              <v-col>
+                <v-switch
+                  v-model="enableStreetView"
+                  :label="`Street View`"
+                ></v-switch></v-col
+              ><v-col
+                ><v-switch
+                  v-model="showNeighborhoods"
+                  :label="`Neighborhoods`"
+                ></v-switch></v-col
+            ></v-row>
+            <v-row>
+              <v-col
+                ><v-switch v-model="usePegman" label="Pegman Filter"></v-switch
+              ></v-col>
+              <v-col
+                ><v-slider
+                  v-model="radius"
+                  label="Pegman Radius"
+                  hint="Meters"
+                  min="100"
+                  step="100"
+                  max="3000"
+                  thumb-label="always"
+                ></v-slider
+              ></v-col>
+            </v-row>
+          </v-container>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
+
     <v-text-field ref="searchBox" placeholder="Seach Maps" />
     <IPGmap
+      ref="map"
       api-key="AIzaSyBnJ5jl0UqbTRJqe1uJEVj_J3OmZTRQRkc"
       :center="home"
       :pegman="home"
@@ -49,7 +76,7 @@
       </template>
       <template v-slot:layers>
         <IPGmapHeatMap :points="points" />
-        <IPGmapAreaLayer :shape="neighborhoods" />
+        <IPGmapAreaLayer :visible="showNeighborhoods" :shape="neighborhoods" />
       </template>
     </IPGmap>
   </div>
@@ -72,10 +99,12 @@ export default {
   },
   data() {
     return {
+      panelsState: [0],
       enablePOI: false,
-      neighborhoods: {},
+      // neighborhoods: {},
       neighborhoodLocs: [],
       enableStreetView: false,
+      showNeighborhoods: true,
       zoom: 12,
       currentLocation: {},
       circleOptions: {},
@@ -113,9 +142,23 @@ export default {
       if (this.$store.state.home) return this.$store.state.home
       else return { lat: 37.774546, lng: -122.433523 }
     },
+    radius: {
+      get() {
+        if (this.$store.state.radius) return this.$store.state.radius
+        else return 1000
+      },
+      set(v) {
+        this.$store.commit('setRadius', v)
+      },
+    },
     points() {
       if (this.$store.state.datasets && this.$store.state.datasets.points)
         return this.$store.state.datasets.points
+      else return []
+    },
+    neighborhoods() {
+      if (this.$store.state.neighborhoods)
+        return this.$store.state.neighborhoods
       else return []
     },
     pegman() {
@@ -131,12 +174,13 @@ export default {
     },
   },
   watch: {
+    showNeighborhoods(newValue, oldValue) {},
     usePegman(newValue, oldValue) {
       console.log(newValue)
     },
     points(newValue, oldValue) {
       console.log('points changed in $store')
-      this.$forceUpdate()
+      // this.$forceUpdate()
     },
   },
   mounted() {},
