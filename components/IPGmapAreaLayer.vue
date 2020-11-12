@@ -1,3 +1,27 @@
+<template>
+  <v-dialog v-model="details" max-width="500"
+    ><v-card>
+      <v-card-title>{{ selectedN.name }}</v-card-title>
+      <v-divider></v-divider>
+      <v-card-text
+        ><v-data-table
+          dense
+          :headers="detailHeaders"
+          :items="selectedN.props"
+          hide-default-header
+          hide-default-footer
+        ></v-data-table
+      ></v-card-text>
+      <v-divider></v-divider>
+      <v-card-actions>
+        <v-btn color="blue darken-1" text @click="details = false">
+          Close
+        </v-btn>
+      </v-card-actions>
+    </v-card></v-dialog
+  >
+</template>
+
 <script>
 import * as d3 from 'd3'
 
@@ -22,6 +46,21 @@ export default {
       },
     },
   },
+  data() {
+    return {
+      details: false,
+      selectedN: {},
+      detailHeaders: [
+        {
+          text: 'Measure',
+          align: 'start',
+          sortable: false,
+          value: 'name',
+        },
+        { text: 'Value', value: 'prop' },
+      ],
+    }
+  },
   watch: {
     measure(value) {
       this.init()
@@ -30,7 +69,6 @@ export default {
       this.init()
     },
     visible(value) {
-      console.log('visibility changed to ' + value)
       this.init()
     },
   },
@@ -42,7 +80,6 @@ export default {
       // Ignore initial empty object
       if (this.visible) {
         if (JSON.stringify(this.shape) !== '{}') {
-          // eslint-disable-next-line no-console
           const map = this.$parent.map
           this.layer = this.$parent.map.data.addGeoJson(this.shape, {
             idPropertyName: 'nhood',
@@ -50,7 +87,6 @@ export default {
           if (this.shape && this.shape.features) {
             const data = []
             for (const feature of this.shape.features) {
-              console.log(feature)
               if (feature.properties[this.measure])
                 data.push(parseFloat(feature.properties[this.measure]))
               else data.push(0)
@@ -75,7 +111,20 @@ export default {
           })
           // Examples
           this.$parent.map.data.addListener('click', (event) => {
-            map.data.overrideStyle(event.feature, { fillColor: 'red' })
+            this.details = true
+            const feature = event.feature
+            const props = []
+            feature.forEachProperty((prop, name) => {
+              if (name !== 'nhood' && name !== 'Analysis Neighborhood')
+                props.push({ name, prop })
+            })
+            this.selectedN = {
+              name: feature.getId(),
+              props,
+            }
+            map.data.overrideStyle(event.feature, {
+              strokeColor: '#006699',
+            })
           })
           // When the user hovers, tempt them to click by outlining the letters.
           // Call revertStyle() to remove all overrides. This will use the style rules
@@ -84,7 +133,6 @@ export default {
             map.data.revertStyle()
             map.data.overrideStyle(event.feature, { strokeWeight: 3 })
           })
-          console.log(this.layer)
         }
       } else if (this.layer !== undefined) {
         const map = this.$parent.map
@@ -96,8 +144,8 @@ export default {
     },
   },
   // It's a renderless component, so don't render anything.
-  render() {
-    return this.$slots.default
-  },
+  // render() {
+  //   return this.$slots.default
+  // },
 }
 </script>

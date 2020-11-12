@@ -3,114 +3,150 @@
     <!-- <v-btn @click="points = newPoints">Click Me</v-btn> -->
     <!-- <v-btn @click="fetchData()">Load Heatmap</v-btn> -->
     <!-- <span>{{ neighborhoods }}</span> -->
-    <v-expansion-panels v-model="panelsState" multiple :accordion="true">
-      <v-expansion-panel key="0">
-        <v-expansion-panel-header
-          >Visualization Options</v-expansion-panel-header
-        >
-        <v-expansion-panel-content>
-          <v-layout
-            ><v-row>
-              <v-col>
-                <v-switch
-                  v-model="enablePOI"
-                  :label="`Points of Interest`"
-                ></v-switch>
-              </v-col>
-              <v-col>
-                <v-switch
-                  v-model="enableStreetView"
-                  :label="`Street View`"
-                ></v-switch></v-col
-            ></v-row>
-            <v-row>
-              <v-col
-                ><v-switch v-model="usePegman" label="Pegman Filter"></v-switch
-              ></v-col>
-              <v-col
-                ><v-slider
-                  v-model="radius"
-                  :disabled="!usePegman"
-                  label="Pegman Radius"
-                  hint="Meters"
-                  min="100"
-                  step="100"
-                  max="3000"
-                  thumb-label="always"
-                ></v-slider
-              ></v-col>
-            </v-row>
-          </v-layout>
-        </v-expansion-panel-content>
-      </v-expansion-panel>
-      <v-expansion-panel key="1">
-        <v-expansion-panel-header>Heatmap Options</v-expansion-panel-header>
-        <v-expansion-panel-content>
-          <v-layout>
-            <v-row>
-              <v-col>
-                <v-switch
-                  v-model="showHeatmap"
-                  :label="`Show Heatmap`"
-                ></v-switch>
-              </v-col>
-              <v-col>
-                <v-switch
-                  v-model="dissipating"
-                  :disabled="!showHeatmap"
-                  :label="`Dissipating`"
-                ></v-switch>
-              </v-col>
-              <v-col
-                ><v-slider
-                  v-model="maxIntensity"
-                  :disabled="!showHeatmap"
-                  label="Max Intensity"
-                  min="0"
-                  step="5"
-                  max="250"
-                  thumb-label="always"
-                ></v-slider></v-col
-              ><v-col
-                ><v-slider
-                  v-model="heatMapRadius"
-                  :disabled="!showHeatmap"
-                  label="Heat Radius"
-                  min="0"
-                  step="1"
-                  max="50"
-                  thumb-label="always"
-                ></v-slider
-              ></v-col>
-            </v-row>
-          </v-layout>
-        </v-expansion-panel-content>
-      </v-expansion-panel>
-      <v-expansion-panel key="2">
-        <v-expansion-panel-header
-          >Neighborhood Options</v-expansion-panel-header
-        >
-        <v-expansion-panel-content>
-          <v-layout>
-            <v-row>
-              <v-col
-                ><v-switch
-                  v-model="showNeighborhoods"
-                  :label="`Show Neighborhoods`"
-                ></v-switch></v-col
-              ><v-col
-                ><v-select
-                  v-model="measure"
-                  :disabled="!showNeighborhoods"
-                  :label="`Measure`"
-                  :items="measures"
-                ></v-select
-              ></v-col>
-            </v-row>
-          </v-layout>
-        </v-expansion-panel-content>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <v-tabs v-model="tabs">
+      <v-tabs-slider></v-tabs-slider>
+      <v-tab> About</v-tab><v-tab>Options</v-tab>
+    </v-tabs>
+    <v-tabs-items v-model="tabs">
+      <v-tab-item>
+        <v-row>
+          <v-col>
+            <v-card flat>
+              <v-card-title class="headline">About</v-card-title>
+              <v-card-subtitle>Geo Visualization</v-card-subtitle>
+              <v-card-text>
+                <div class="text--primary">
+                  <p>
+                    This visualization shows crimes using a Heat Map layer, as
+                    well as an Area Map layer. Both the Heat Map and the Area
+                    Map can be configured in the Options tab.
+                  </p>
+                  <p>
+                    Additionally, Street View can be enabled, allowing you to
+                    optionally filter your data based on your currently selected
+                    location. Filters located to the right hand side of this
+                    application can also further filter your data selection
+                    based on Neighborhood, Incident Type, and Date Range.
+                  </p>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-tab-item>
+      <v-tab-item>
+        <v-expansion-panels v-model="panelsState" multiple :accordion="true">
+          <v-expansion-panel key="0">
+            <v-expansion-panel-header
+              >Visualization Options</v-expansion-panel-header
+            >
+            <v-expansion-panel-content>
+              <v-container
+                ><v-row dense>
+                  <v-col>
+                    <v-switch
+                      v-model="enablePOI"
+                      :label="`Points of Interest`"
+                    ></v-switch>
+                  </v-col>
+                  <v-col>
+                    <v-switch
+                      v-model="enableStreetView"
+                      :label="`Street View`"
+                    ></v-switch
+                  ></v-col>
+                  <v-col
+                    ><v-switch
+                      v-model="usePegman"
+                      label="Pegman Filter"
+                    ></v-switch
+                  ></v-col>
+                  <v-col
+                    ><v-slider
+                      v-model="radius"
+                      :disabled="!usePegman"
+                      label="Pegman Radius"
+                      hint="Meters"
+                      min="100"
+                      step="100"
+                      max="3000"
+                      thumb-label="always"
+                    ></v-slider
+                  ></v-col>
+                </v-row>
+              </v-container>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+          <v-expansion-panel key="1">
+            <v-expansion-panel-header>Heatmap Options</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-layout>
+                <v-row>
+                  <v-col>
+                    <v-switch
+                      v-model="showHeatmap"
+                      :label="`Show Heatmap`"
+                    ></v-switch>
+                  </v-col>
+                  <v-col>
+                    <v-switch
+                      v-model="dissipating"
+                      :disabled="!showHeatmap"
+                      :label="`Dissipating`"
+                    ></v-switch>
+                  </v-col>
+                  <v-col
+                    ><v-slider
+                      v-model="maxIntensity"
+                      :disabled="!showHeatmap"
+                      label="Max Intensity"
+                      min="0"
+                      step="5"
+                      max="250"
+                      thumb-label="always"
+                    ></v-slider></v-col
+                  ><v-col
+                    ><v-slider
+                      v-model="heatMapRadius"
+                      :disabled="!showHeatmap"
+                      label="Heat Radius"
+                      min="0"
+                      step="1"
+                      max="50"
+                      thumb-label="always"
+                    ></v-slider
+                  ></v-col>
+                </v-row>
+              </v-layout>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+          <v-expansion-panel key="2">
+            <v-expansion-panel-header
+              >Neighborhood Options</v-expansion-panel-header
+            >
+            <v-expansion-panel-content>
+              <v-layout>
+                <v-row>
+                  <v-col
+                    ><v-switch
+                      v-model="showNeighborhoods"
+                      :label="`Show Neighborhoods`"
+                    ></v-switch></v-col
+                  ><v-col
+                    ><v-select
+                      v-model="measure"
+                      :disabled="!showNeighborhoods"
+                      :label="`Measure`"
+                      :items="measures"
+                    ></v-select
+                  ></v-col>
+                </v-row>
+              </v-layout>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </v-tab-item>
+    </v-tabs-items>
 
     <v-text-field ref="searchBox" placeholder="Seach Maps" />
     <IPGmap
@@ -135,7 +171,7 @@
           }"
           @click="currentLocation = location"
         /> -->
-        <IPSearchBox :search-box="mySearch()" />
+        <IPSearchBox :search-box="sBox" />
       </template>
       <template v-slot:layers>
         <IPGmapHeatMap
@@ -172,8 +208,16 @@ export default {
   },
   data() {
     return {
+      tabs: null,
       panelsState: [0, 1, 2],
       enablePOI: false,
+      measures: [
+        'Population',
+        'PercentHSDiplomaOrLower',
+        'IncomePerCapita',
+        'PercentPoverty',
+        'PopulationDensity',
+      ],
       measure: 'PercentPoverty',
       showHeatmap: true,
       // neighborhoods: {},
@@ -184,6 +228,7 @@ export default {
       enableStreetView: false,
       showNeighborhoods: false,
       zoom: 12,
+      sBox: null,
       currentLocation: {},
       circleOptions: {},
       newPoints: [{ lat: 37.782, lng: -122.447 }],
@@ -234,19 +279,19 @@ export default {
         return this.$store.state.datasets.points
       else return []
     },
-    measures() {
-      if (
-        this.$store.state.datasets &&
-        this.$store.state.datasets.census &&
-        this.$store.state.datasets.census.length > 0
-      ) {
-        const c = []
-        for (const field in this.$store.state.datasets.census[0]) {
-          if (field !== 'Analysis Neighborhood') c.push(field)
-        }
-        return c
-      } else return []
-    },
+    // measures() {
+    //   if (
+    //     this.$store.state.datasets &&
+    //     this.$store.state.datasets.census &&
+    //     this.$store.state.datasets.census.length > 0
+    //   ) {
+    //     const c = []
+    //     for (const field in this.$store.state.datasets.census[0]) {
+    //       if (field !== 'Analysis Neighborhood') c.push(field)
+    //     }
+    //     return c
+    //   } else return []
+    // },
     neighborhoods() {
       if (this.$store.state.neighborhoods)
         return this.$store.state.neighborhoods
@@ -274,11 +319,13 @@ export default {
       // this.$forceUpdate()
     },
   },
-  mounted() {},
+  mounted() {
+    this.sBox = this.$refs.searchBox.$refs.input
+  },
   methods: {
     mySearch() {
       // console.log(this.$refs.searchBox.$el)
-      return this.$refs.searchBox.$refs.input
+      // return this.$refs.searchBox.$refs.input
     },
     findCrime(e) {
       this.$store.commit('setPegman', { lat: e.lat(), lng: e.lng() })
