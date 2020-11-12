@@ -222,7 +222,7 @@ export default {
           AND CAST("Longitude" AS DECIMAL) BETWEEN ${params.minLon} AND ${params.maxLon}`
       }
       d.points = await this.$axios
-        .post(this.$axios.defaults.baseURL + '/api/sql', {
+        .post('/api/sql', {
           sql: `SELECT "Incident ID","Incident Category","Incident Description","Latitude","Longitude" FROM incidents ${where} LIMIT 25000`,
         })
         .then((d) => {
@@ -249,7 +249,7 @@ export default {
         console.log(d.points)
       }
       d.calData = await this.$axios
-        .post(this.$axios.defaults.baseURL + '/api/sql', {
+        .post('/api/sql', {
           sql: `SELECT today.[Date], today.[Crimes] as [Close], yesterday.[Crimes] AS [Open] FROM 
             (SELECT REPLACE([Incident Date],'/','-') as [Date], COUNT(*) AS [Crimes] FROM incidents ${globalwhere} GROUP BY REPLACE([Incident Date],'/','-')) today
             LEFT OUTER JOIN
@@ -270,13 +270,10 @@ export default {
     async fetchData() {
       this.isLoading = true
       // Get Neighborhoods
-      let r = await this.$axios.post(
-        this.$axios.defaults.baseURL + '/api/sql',
-        {
-          sql:
-            "SELECT DISTINCT [Analysis Neighborhood] FROM incidents WHERE [Analysis Neighborhood] != ''",
-        }
-      )
+      let r = await this.$axios.post('/api/sql', {
+        sql:
+          "SELECT DISTINCT [Analysis Neighborhood] FROM incidents WHERE [Analysis Neighborhood] != ''",
+      })
       const locs = []
       r.data.data.map((l) => {
         locs.push(l['Analysis Neighborhood'])
@@ -284,7 +281,7 @@ export default {
       this.filterDimensions.neighborhoodLocs = locs
 
       // Get Incident Categories
-      r = await this.$axios.post(this.$axios.defaults.baseURL + '/api/sql', {
+      r = await this.$axios.post('/api/sql', {
         sql:
           "SELECT DISTINCT [Incident Category] FROM incidents WHERE [Incident Category] != ''",
       })
