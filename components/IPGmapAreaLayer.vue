@@ -1,10 +1,18 @@
 <script>
+import * as d3 from 'd3'
+
 export default {
   props: {
     shape: {
       type: Object,
       default: () => {
         return {}
+      },
+    },
+    measure: {
+      type: String,
+      default() {
+        return 'PercentPoverty'
       },
     },
     visible: {
@@ -15,6 +23,9 @@ export default {
     },
   },
   watch: {
+    measure(value) {
+      this.init()
+    },
     shape(value) {
       this.init()
     },
@@ -25,19 +36,41 @@ export default {
   },
   methods: {
     init() {
+      if (!this.$parent.map) return
+      let color
+      let opac
       // Ignore initial empty object
       if (this.visible) {
         if (JSON.stringify(this.shape) !== '{}') {
           // eslint-disable-next-line no-console
           const map = this.$parent.map
           this.layer = this.$parent.map.data.addGeoJson(this.shape, {
-            idPropertyName: 'neighborhood',
+            idPropertyName: 'nhood',
           })
+          if (this.shape && this.shape.features) {
+            const data = []
+            for (const feature of this.shape.features) {
+              console.log(feature)
+              if (feature.properties[this.measure])
+                data.push(parseFloat(feature.properties[this.measure]))
+              else data.push(0)
+            }
+            const min = d3.min(data)
+            const max = d3.max(data)
+
+            color = d3.scaleSequential(d3.interpolatePuBu).domain([min, max])
+            opac = d3.scaleSequential([0, 0.8]).domain([min, max])
+            opac(0)
+          }
+
           this.$parent.map.data.setStyle((feature) => {
+            const value = feature.getProperty(this.measure)
             return {
+              // fillOpacity: 0.2,
               strokeWeight: 1,
-              strokeColor: '#009966',
-              fillColor: '#009966',
+              strokeColor: color(value),
+              fillColor: 'white',
+              fillOpacity: opac(value),
             }
           })
           // Examples
