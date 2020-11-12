@@ -4,12 +4,12 @@
     <!-- <v-btn @click="fetchData()">Load Heatmap</v-btn> -->
     <!-- <span>{{ neighborhoods }}</span> -->
     <v-expansion-panels v-model="panelsState" multiple :accordion="true">
-      <v-expansion-panel>
+      <v-expansion-panel key="0">
         <v-expansion-panel-header
           >Visualization Options</v-expansion-panel-header
         >
         <v-expansion-panel-content>
-          <v-container
+          <v-layout
             ><v-row>
               <v-col>
                 <v-switch
@@ -22,11 +22,6 @@
                   v-model="enableStreetView"
                   :label="`Street View`"
                 ></v-switch></v-col
-              ><v-col
-                ><v-switch
-                  v-model="showNeighborhoods"
-                  :label="`Neighborhoods`"
-                ></v-switch></v-col
             ></v-row>
             <v-row>
               <v-col
@@ -35,6 +30,7 @@
               <v-col
                 ><v-slider
                   v-model="radius"
+                  :disabled="!usePegman"
                   label="Pegman Radius"
                   hint="Meters"
                   min="100"
@@ -44,7 +40,74 @@
                 ></v-slider
               ></v-col>
             </v-row>
-          </v-container>
+          </v-layout>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel key="1">
+        <v-expansion-panel-header>Heatmap Options</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-layout>
+            <v-row>
+              <v-col>
+                <v-switch
+                  v-model="showHeatmap"
+                  :label="`Show Heatmap`"
+                ></v-switch>
+              </v-col>
+              <v-col>
+                <v-switch
+                  v-model="dissipating"
+                  :disabled="!showHeatmap"
+                  :label="`Dissipating`"
+                ></v-switch>
+              </v-col>
+              <v-col
+                ><v-slider
+                  v-model="maxIntensity"
+                  :disabled="!showHeatmap"
+                  label="Max Intensity"
+                  min="0"
+                  step="5"
+                  max="250"
+                  thumb-label="always"
+                ></v-slider></v-col
+              ><v-col
+                ><v-slider
+                  v-model="heatMapRadius"
+                  :disabled="!showHeatmap"
+                  label="Heat Radius"
+                  min="0"
+                  step="1"
+                  max="50"
+                  thumb-label="always"
+                ></v-slider
+              ></v-col>
+            </v-row>
+          </v-layout>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel key="2">
+        <v-expansion-panel-header
+          >Neighborhood Options</v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <v-layout>
+            <v-row>
+              <v-col
+                ><v-switch
+                  v-model="showNeighborhoods"
+                  :label="`Show Neighborhoods`"
+                ></v-switch></v-col
+              ><v-col
+                ><v-select
+                  v-model="measure"
+                  :disabled="!showNeighborhoods"
+                  :label="`Measure`"
+                  :items="measures"
+                ></v-select
+              ></v-col>
+            </v-row>
+          </v-layout>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
@@ -62,7 +125,7 @@
       @position_changed="findCrime"
     >
       <template v-slot:markers>
-        <IPGmapMarker
+        <!-- <IPGmapMarker
           v-for="location in locations"
           :key="location.id"
           :position="{ lat: location.lat, lng: location.lng }"
@@ -71,19 +134,29 @@
               location === currentLocation ? pins.selected : pins.notSelected,
           }"
           @click="currentLocation = location"
-        />
+        /> -->
         <IPSearchBox :search-box="mySearch()" />
       </template>
       <template v-slot:layers>
-        <IPGmapHeatMap :points="points" />
-        <IPGmapAreaLayer :visible="showNeighborhoods" :shape="neighborhoods" />
+        <IPGmapHeatMap
+          :show-heatmap="showHeatmap"
+          :dissipating="dissipating"
+          :points="points"
+          :max-intensity="maxIntensity"
+          :radius="heatMapRadius"
+        />
+        <IPGmapAreaLayer
+          :visible="showNeighborhoods"
+          :shape="neighborhoods"
+          :measure="measure"
+        />
       </template>
     </IPGmap>
   </div>
 </template>
 <script>
 import IPGmap from '~/components/IPGmap.vue'
-import IPGmapMarker from '~/components/IPGmapMarker.vue'
+// import IPGmapMarker from '~/components/IPGmapMarker.vue'
 import IPGmapHeatMap from '~/components/IPGmapHeatMap.vue'
 import IPGmapAreaLayer from '~/components/IPGmapAreaLayer.vue'
 import IPSearchBox from '~/components/IPSearchBox.vue'
@@ -92,19 +165,24 @@ export default {
   name: 'DataViz',
   components: {
     IPGmap,
-    IPGmapMarker,
+    // IPGmapMarker,
     IPGmapHeatMap,
     IPGmapAreaLayer,
     IPSearchBox,
   },
   data() {
     return {
-      panelsState: [0],
+      panelsState: [0, 1, 2],
       enablePOI: false,
+      measure: 'PercentPoverty',
+      showHeatmap: true,
       // neighborhoods: {},
       neighborhoodLocs: [],
+      maxIntensity: 15,
+      heatMapRadius: 10,
+      dissipating: true,
       enableStreetView: false,
-      showNeighborhoods: true,
+      showNeighborhoods: false,
       zoom: 12,
       currentLocation: {},
       circleOptions: {},
@@ -155,6 +233,19 @@ export default {
       if (this.$store.state.datasets && this.$store.state.datasets.points)
         return this.$store.state.datasets.points
       else return []
+    },
+    measures() {
+      if (
+        this.$store.state.datasets &&
+        this.$store.state.datasets.census &&
+        this.$store.state.datasets.census.length > 0
+      ) {
+        const c = []
+        for (const field in this.$store.state.datasets.census[0]) {
+          if (field !== 'Analysis Neighborhood') c.push(field)
+        }
+        return c
+      } else return []
     },
     neighborhoods() {
       if (this.$store.state.neighborhoods)

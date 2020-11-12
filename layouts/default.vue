@@ -1,6 +1,15 @@
 <template>
   <v-app dark>
-    <v-overlay :value="isLoading"></v-overlay>
+    ><v-dialog v-model="isLoading" persistent width="300">
+      <v-card color="primary" dark>
+        <v-card-text
+          ><br />
+          Crunching Numbers...
+          <v-progress-linear indeterminate color="white"></v-progress-linear>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
@@ -206,7 +215,6 @@ export default {
       this.$store.commit('setDatasets', newValue)
     },
     neighborhoods(newValue) {
-      console.log(newValue)
       this.$store.commit('setNeighborhoods', newValue)
     },
     home(newValue) {
@@ -350,10 +358,41 @@ export default {
         incs.push(l['Incident Category'])
       })
       this.filterDimensions.incidentCategories = incs
-      // Get GeoJSON
-      this.neighborhoods = await fetch('/san-francisco-neighborhoods.geojson')
+      // Get Census data
+      // Get Incident Categories
+      const census = await this.$axios.post('/api/sql', {
+        sql: 'SELECT DISTINCT * FROM census',
+      })
+      const d = JSON.parse(JSON.stringify(this.datasets))
+      d.census = census.data.data
+      this.datasets = JSON.parse(JSON.stringify(d))
+      // Get GeoJSON for neighborhoods
+      this.neighborhoods = await fetch('/analysis-neighborhoods.geojson')
         .then((res) => res.json())
         .then((d) => {
+          if (d.features) {
+            d.features.forEach((feature) => {
+              // console.log(feature)
+              const n = feature.properties
+                ? feature.properties.nhood
+                  ? feature.properties.nhood
+                  : 'No Neighborhood Property'
+                : 'No Properties'
+              // Filter to neighborhood in census data
+              const c2 = this.datasets.census.filter(function (c) {
+                return c['Analysis Neighborhood'] === this
+              }, n)
+              // If we found a match, add additional data to geojson data
+              if (c2.length > 0) {
+                const f = c2[0]
+                for (const field in f) {
+                  feature.properties[field] = f[field]
+                }
+              }
+            })
+          }
+          // Force an update
+          this.neighborhoods = JSON.parse(JSON.stringify(this.neighborhoods))
           return d
         })
       this.isLoading = false

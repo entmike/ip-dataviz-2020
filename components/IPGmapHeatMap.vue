@@ -7,6 +7,30 @@ export default {
         return []
       },
     },
+    showHeatmap: {
+      type: Boolean,
+      default: () => {
+        return true
+      },
+    },
+    dissipating: {
+      type: Boolean,
+      default: () => {
+        return true
+      },
+    },
+    maxIntensity: {
+      type: Number,
+      default() {
+        return 15
+      },
+    },
+    radius: {
+      type: Number,
+      default() {
+        return 10
+      },
+    },
   },
 
   data() {
@@ -18,7 +42,19 @@ export default {
   watch: {
     points(value) {
       // eslint-disable-next-line no-console
-      console.log(value)
+      // console.log(value)
+      this.init()
+    },
+    maxIntensity(value) {
+      this.init()
+    },
+    radius(value) {
+      this.init()
+    },
+    showHeatmap(value) {
+      this.init()
+    },
+    dissipating(value) {
       this.init()
     },
   },
@@ -31,12 +67,14 @@ export default {
           hmd.push(new google.maps.LatLng(h.Latitude, h.Longitude))
       })
       // console.log(hmd)
+      // if (this.layerLoaded) {
+      //   this.layer.setMap(null)
+      //   this.layerLoaded = false
+      // }
       if (!this.layerLoaded) {
         this.layer = new this.$parent.google.maps.visualization.HeatmapLayer({
           map: this.$parent.map,
-          dissipating: true,
-          radius: 10,
-          maxIntensity: 5,
+          // dissipating: true,
           gradient: [
             'rgba(0, 255, 255, 0)',
             'rgba(0, 255, 255, 1)',
@@ -57,6 +95,12 @@ export default {
         this.$parent.layers.push(this.layer)
         this.layerLoaded = true
       }
+      this.layer.setOptions({
+        radius: this.radius,
+        maxIntensity: this.maxIntensity,
+        opacity: this.showHeatmap ? 0.6 : 0.0,
+        dissipating: this.dissipating,
+      })
       this.layer.setData(hmd)
       this.layerLoaded = true
     },
