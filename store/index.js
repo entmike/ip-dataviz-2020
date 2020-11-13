@@ -9,11 +9,15 @@ export const state = () => ({
   pegman: { lat: 37.774546, lng: -122.433523 },
   usePegman: false,
   neighborhoods: {},
+  rightDrawer: false,
 })
 
 export const mutations = {
   setDatasets(state, datasets) {
     state.datasets = datasets
+  },
+  setRightDrawer(state, v) {
+    state.rightDrawer = v
   },
   setUsePegman(state, val) {
     state.usePegman = val
@@ -38,6 +42,9 @@ export const getters = {
   },
   getHome(state) {
     return state.home
+  },
+  getRightDrawer(state) {
+    return state.rightDrawer
   },
   getPegman(state) {
     return state.pegman

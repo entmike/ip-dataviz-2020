@@ -10,7 +10,7 @@
       </v-card>
     </v-dialog>
 
-    <v-navigation-drawer
+    <!-- <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
       clipped
@@ -33,17 +33,17 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-    </v-navigation-drawer>
+    </v-navigation-drawer> -->
     <v-app-bar clipped-left clipped-right fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <!-- <v-btn icon @click.stop="miniVariant = !miniVariant">
         <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
       </v-btn> -->
-      <v-toolbar-title v-text="title" />
+      <!-- <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn icon @click.stop="rightDrawer = !rightDrawer">
         <v-icon>mdi-filter</v-icon>
-      </v-btn>
+      </v-btn> -->
     </v-app-bar>
     <v-main>
       <v-container>
@@ -55,6 +55,7 @@
       right
       clipped
       fixed
+      disable-resize-watcher
       app
       :width="350"
       ><v-list>
@@ -209,7 +210,6 @@ export default {
         // },
       ],
       miniVariant: false,
-      rightDrawer: false,
       title: 'IP 2020 Viz Competition',
     }
   },
@@ -225,6 +225,14 @@ export default {
     },
     radius() {
       return this.$store.state.radius
+    },
+    rightDrawer: {
+      get() {
+        return this.$store.state.rightDrawer
+      },
+      set(v) {
+        this.$store.commit('setRightDrawer', v)
+      },
     },
   },
   watch: {

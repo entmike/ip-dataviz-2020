@@ -1,167 +1,188 @@
 <template>
-  <div>
+  <v-app>
+    <v-dialog v-model="showHelp" width="80%" height="50"
+      ><v-card flat height="50vh"
+        ><v-card-title>
+          <span class="headline">About</span>
+        </v-card-title>
+        <v-card-text>
+          <v-tabs v-model="tabs">
+            <v-tabs-slider></v-tabs-slider>
+            <v-tab>About the Map</v-tab>
+            <v-tab>About the Calendar</v-tab>
+          </v-tabs>
+          <v-tabs-items v-model="tabs">
+            <v-tab-item>
+              <v-row>
+                <v-col>
+                  <v-card flat>
+                    <v-card-title class="headline"
+                      >Geo Visualization</v-card-title
+                    >
+                    <!-- <v-card-subtitle>Geo Visualization</v-card-subtitle> -->
+                    <v-card-text>
+                      <div class="text--primary">
+                        <p>
+                          This visualization shows crimes using a Heat Map
+                          layer, as well as an Area Map layer. Both the Heat Map
+                          and the Area Map can be configured in the Options tab.
+                        </p>
+                        <p>
+                          Additionally, Street View can be enabled, allowing you
+                          to optionally filter your data based on your currently
+                          selected location. Filters located to the right hand
+                          side of this application can also further filter your
+                          data selection based on Neighborhood, Incident Type,
+                          and Date Range.
+                        </p>
+                      </div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-tab-item>
+            <v-tab-item>
+              <v-card flat>
+                <v-card-title class="headline"
+                  >Calendar Visualization</v-card-title
+                >
+                <!-- <v-card-subtitle>Calendar Visualization</v-card-subtitle> -->
+                <v-card-text>
+                  <div class="text--primary">
+                    The calendar shows the number of incidents on a given day
+                    and visualizes changes in incidents over time along with
+                    periods of high and low activity
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+          </v-tabs-items></v-card-text
+        ></v-card
+      ></v-dialog
+    >
+    <v-navigation-drawer
+      v-model="propertyDrawer"
+      disable-resize-watcher
+      clipped
+      fixed
+      app
+      width="300"
+      ><v-expansion-panels v-model="panelsState" multiple :accordion="true">
+        <v-expansion-panel key="0">
+          <v-expansion-panel-header
+            >Visualization Options</v-expansion-panel-header
+          >
+          <v-expansion-panel-content
+            ><v-container
+              ><v-list>
+                <v-list-item>
+                  <v-switch
+                    v-model="enablePOI"
+                    :label="`Points of Interest`"
+                  ></v-switch>
+                </v-list-item>
+                <v-list-item>
+                  <v-switch
+                    v-model="enableStreetView"
+                    :label="`Street View`"
+                  ></v-switch></v-list-item
+                ><v-list-item>
+                  <v-switch
+                    v-model="usePegman"
+                    label="Pegman Filter"
+                  ></v-switch></v-list-item
+                ><v-list-item>
+                  <v-slider
+                    v-model="radius"
+                    :disabled="!usePegman"
+                    label="Pegman Radius"
+                    hint="Meters"
+                    min="100"
+                    step="100"
+                    max="3000"
+                    thumb-label="always"
+                  ></v-slider></v-list-item></v-list></v-container
+          ></v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel key="1">
+          <v-expansion-panel-header>Heatmap Options</v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-list
+              ><v-list-item>
+                <v-switch
+                  v-model="showHeatmap"
+                  :label="`Show Heatmap`"
+                ></v-switch> </v-list-item
+              ><v-list-item>
+                <v-switch
+                  v-model="dissipating"
+                  :disabled="!showHeatmap"
+                  :label="`Dissipating`"
+                ></v-switch> </v-list-item
+              ><v-list-item>
+                <v-slider
+                  v-model="maxIntensity"
+                  :disabled="!showHeatmap"
+                  label="Max Intensity"
+                  min="0"
+                  step="5"
+                  max="250"
+                  thumb-label="always"
+                ></v-slider></v-list-item
+              ><v-list-item
+                ><v-slider
+                  v-model="heatMapRadius"
+                  :disabled="!showHeatmap"
+                  label="Heat Radius"
+                  min="0"
+                  step="1"
+                  max="50"
+                  thumb-label="always"
+                ></v-slider></v-list-item
+            ></v-list>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel key="2">
+          <v-expansion-panel-header
+            >Neighborhood Options</v-expansion-panel-header
+          >
+          <v-expansion-panel-content>
+            <v-layout>
+              <v-row>
+                <v-col
+                  ><v-switch
+                    v-model="showNeighborhoods"
+                    :label="`Show Neighborhoods`"
+                  ></v-switch></v-col
+                ><v-col
+                  ><v-select
+                    v-model="measure"
+                    :disabled="!showNeighborhoods"
+                    :label="`Measure`"
+                    :items="measures"
+                  ></v-select
+                ></v-col>
+              </v-row>
+            </v-layout>
+          </v-expansion-panel-content>
+        </v-expansion-panel> </v-expansion-panels
+    ></v-navigation-drawer>
+    <v-app-bar clipped-left clipped-right fixed app>
+      <v-btn icon @click.stop="propertyDrawer = !propertyDrawer"
+        ><v-icon>mdi-palette-outline</v-icon></v-btn
+      >
+      <v-btn icon @click.stop="showHelp = !showHelp"
+        ><v-icon>mdi-help</v-icon></v-btn
+      >
+      <v-toolbar-title v-text="title" />
+      <v-spacer />
+      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
+        <v-icon>mdi-filter</v-icon>
+      </v-btn>
+    </v-app-bar>
     <!-- <v-btn @click="points = newPoints">Click Me</v-btn> -->
     <!-- <v-btn @click="fetchData()">Load Heatmap</v-btn> -->
     <!-- <span>{{ neighborhoods }}</span> -->
-    <v-tabs v-model="tabs">
-      <v-tabs-slider></v-tabs-slider>
-      <v-tab>About the Map</v-tab>
-      <v-tab>About the Calendar</v-tab>
-      <v-tab>Mapping Options</v-tab>
-    </v-tabs>
-    <v-tabs-items v-model="tabs">
-      <v-tab-item>
-        <v-row>
-          <v-col>
-            <v-card flat>
-              <v-card-title class="headline">About</v-card-title>
-              <v-card-subtitle>Geo Visualization</v-card-subtitle>
-              <v-card-text>
-                <div class="text--primary">
-                  <p>
-                    This visualization shows crimes using a Heat Map layer, as
-                    well as an Area Map layer. Both the Heat Map and the Area
-                    Map can be configured in the Options tab.
-                  </p>
-                  <p>
-                    Additionally, Street View can be enabled, allowing you to
-                    optionally filter your data based on your currently selected
-                    location. Filters located to the right hand side of this
-                    application can also further filter your data selection
-                    based on Neighborhood, Incident Type, and Date Range.
-                  </p>
-                </div>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-tab-item>
-      <v-tab-item>
-        <v-card>
-          <v-card-title class="headline">About</v-card-title>
-          <v-card-subtitle>Calendar Visualization</v-card-subtitle>
-          <v-card-text>
-            <div class="text--primary">
-              The calendar shows the number of incidents on a given day and
-              visualizes changes in incidents over time along with periods of
-              high and low activity
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-tab-item>
-      <v-tab-item>
-        <v-expansion-panels v-model="panelsState" multiple :accordion="true">
-          <v-expansion-panel key="0">
-            <v-expansion-panel-header
-              >Visualization Options</v-expansion-panel-header
-            >
-            <v-expansion-panel-content>
-              <v-container
-                ><v-row dense>
-                  <v-col>
-                    <v-switch
-                      v-model="enablePOI"
-                      :label="`Points of Interest`"
-                    ></v-switch>
-                  </v-col>
-                  <v-col>
-                    <v-switch
-                      v-model="enableStreetView"
-                      :label="`Street View`"
-                    ></v-switch
-                  ></v-col>
-                  <v-col
-                    ><v-switch
-                      v-model="usePegman"
-                      label="Pegman Filter"
-                    ></v-switch
-                  ></v-col>
-                  <v-col
-                    ><v-slider
-                      v-model="radius"
-                      :disabled="!usePegman"
-                      label="Pegman Radius"
-                      hint="Meters"
-                      min="100"
-                      step="100"
-                      max="3000"
-                      thumb-label="always"
-                    ></v-slider
-                  ></v-col>
-                </v-row>
-              </v-container>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-          <v-expansion-panel key="1">
-            <v-expansion-panel-header>Heatmap Options</v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <v-layout>
-                <v-row>
-                  <v-col>
-                    <v-switch
-                      v-model="showHeatmap"
-                      :label="`Show Heatmap`"
-                    ></v-switch>
-                  </v-col>
-                  <v-col>
-                    <v-switch
-                      v-model="dissipating"
-                      :disabled="!showHeatmap"
-                      :label="`Dissipating`"
-                    ></v-switch>
-                  </v-col>
-                  <v-col
-                    ><v-slider
-                      v-model="maxIntensity"
-                      :disabled="!showHeatmap"
-                      label="Max Intensity"
-                      min="0"
-                      step="5"
-                      max="250"
-                      thumb-label="always"
-                    ></v-slider></v-col
-                  ><v-col
-                    ><v-slider
-                      v-model="heatMapRadius"
-                      :disabled="!showHeatmap"
-                      label="Heat Radius"
-                      min="0"
-                      step="1"
-                      max="50"
-                      thumb-label="always"
-                    ></v-slider
-                  ></v-col>
-                </v-row>
-              </v-layout>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-          <v-expansion-panel key="2">
-            <v-expansion-panel-header
-              >Neighborhood Options</v-expansion-panel-header
-            >
-            <v-expansion-panel-content>
-              <v-layout>
-                <v-row>
-                  <v-col
-                    ><v-switch
-                      v-model="showNeighborhoods"
-                      :label="`Show Neighborhoods`"
-                    ></v-switch></v-col
-                  ><v-col
-                    ><v-select
-                      v-model="measure"
-                      :disabled="!showNeighborhoods"
-                      :label="`Measure`"
-                      :items="measures"
-                    ></v-select
-                  ></v-col>
-                </v-row>
-              </v-layout>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-tab-item>
-    </v-tabs-items>
 
     <v-text-field ref="searchBox" placeholder="Seach Maps" />
     <IPGmap
@@ -204,7 +225,7 @@
       </template>
     </IPGmap>
     <IPCalendar :data="calendarData" />
-  </div>
+  </v-app>
 </template>
 <script>
 import IPGmap from '~/components/IPGmap.vue'
@@ -227,6 +248,8 @@ export default {
   data() {
     return {
       tabs: null,
+      showHelp: false,
+      propertyDrawer: false,
       panelsState: [0, 1, 2],
       enablePOI: false,
       measures: [
@@ -300,6 +323,14 @@ export default {
     calendarData: {
       get() {
         return this.$store.state.datasets.calData
+      },
+    },
+    rightDrawer: {
+      get() {
+        return this.$store.state.rightDrawer
+      },
+      set(v) {
+        this.$store.commit('setRightDrawer', v)
       },
     },
     // measures() {
