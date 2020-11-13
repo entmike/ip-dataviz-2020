@@ -171,11 +171,11 @@
       <v-btn icon @click.stop="propertyDrawer = !propertyDrawer"
         ><v-icon>mdi-palette-outline</v-icon></v-btn
       >
+      <v-toolbar-title v-text="title" />
+      <v-spacer />
       <v-btn icon @click.stop="showHelp = !showHelp"
         ><v-icon>mdi-help</v-icon></v-btn
       >
-      <v-toolbar-title v-text="title" />
-      <v-spacer />
       <v-btn icon @click.stop="rightDrawer = !rightDrawer">
         <v-icon>mdi-filter</v-icon>
       </v-btn>
@@ -247,6 +247,7 @@ export default {
   },
   data() {
     return {
+      title: 'San Francisco Crimes Analysis',
       tabs: null,
       showHelp: false,
       propertyDrawer: false,

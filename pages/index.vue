@@ -2,10 +2,8 @@
   <v-row justify="center" align="center">
     <v-col cols="12" sm="8" md="6">
       <v-card>
-        <v-img height="300" src="images/header.jpg"></v-img>
-        <v-card-title class="headline">
-          IP Vizathon 2020 - San Francisco Crime
-        </v-card-title>
+        <v-img height="200" src="images/header.jpg"></v-img>
+        <v-card-title class="headline"> San Francisco Crime </v-card-title>
         <v-card-text>
           <p>A Quick and Dirty Visualization Application written in Nuxt.</p>
           <p>
