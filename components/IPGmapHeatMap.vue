@@ -1,6 +1,12 @@
 <script>
 export default {
   props: {
+    selectedCategory: {
+      type: String,
+      default: () => {
+        return null
+      },
+    },
     points: {
       type: Array,
       default: () => {
@@ -45,6 +51,9 @@ export default {
       // console.log(value)
       this.init()
     },
+    selectedCategory(value) {
+      this.init()
+    },
     maxIntensity(value) {
       this.init()
     },
@@ -64,7 +73,11 @@ export default {
       const hmd = []
       this.points.forEach((h) => {
         if (!isNaN(h.Latitude) && !isNaN(h.Longitude))
-          hmd.push(new google.maps.LatLng(h.Latitude, h.Longitude))
+          if (
+            this.selectedCategory === null ||
+            h['Incident Category'] === this.selectedCategory
+          )
+            hmd.push(new google.maps.LatLng(h.Latitude, h.Longitude))
       })
       // console.log(hmd)
       // if (this.layerLoaded) {

@@ -163,6 +163,7 @@ export default {
     return {
       datasets: {
         points: [],
+        crimes: [],
       },
       dates: [
         startDate.toISOString().slice(0, 10) + '',
@@ -187,7 +188,12 @@ export default {
         'Incident Date': [],
         'Police District': [],
       },
-      activeFilterValues: {},
+      activeFilterValues: {
+        'Incident Date': [
+          startDate.toISOString().slice(0, 10) + '',
+          today.toISOString().slice(0, 10) + '',
+        ],
+      },
       items: [
         {
           icon: 'mdi-apps',
@@ -317,7 +323,7 @@ export default {
       }
       d.points = await this.$axios
         .post('/api/sql', {
-          sql: `SELECT "Incident ID","Incident Category","Incident Description","Latitude","Longitude" FROM incidents ${where} LIMIT 25000`,
+          sql: `SELECT "Incident ID","Incident Category","Latitude","Longitude" FROM incidents ${where} LIMIT 25000`,
         })
         .then((d) => {
           d.data.data.map((e) => {
@@ -340,8 +346,23 @@ export default {
           .filter((p) => p.d < radius)
           .sort((a, b) => a.d - b.d)
         // eslint-disable-next-line no-console
-        console.log(d.points)
       }
+      // console.log(d.points)
+      const groupBy = function (xs, key) {
+        return xs.reduce(function (rv, x) {
+          ;(rv[x[key]] = rv[x[key]] || []).push(x)
+          return rv
+        }, {})
+      }
+      const grp = groupBy(d.points, 'Incident Category')
+      const crimes = []
+      for (const crime in grp) {
+        crimes.push({ 'Incident Type': crime, crimes: grp[crime] })
+      }
+      crimes.sort((a, b) => {
+        return b.crimes.length - a.crimes.length
+      })
+      d.crimes = crimes
       d.calData = await this.$axios
         .post('/api/sql', {
           sql: `SELECT today.[Date], today.[Crimes] as [Close], yesterday.[Crimes] AS [Open] FROM 

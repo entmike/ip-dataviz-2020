@@ -185,6 +185,31 @@
     <!-- <span>{{ neighborhoods }}</span> -->
 
     <v-text-field ref="searchBox" placeholder="Seach Maps" />
+    <v-expansion-panels v-model="chipsState" multiple :accordion="true">
+      <v-expansion-panel key="0">
+        <v-expansion-panel-header
+          >Crimes: ({{ points.length }})</v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <v-chip
+            v-for="crime in crimes"
+            :key="crime['Incident Type']"
+            :color="
+              crime['Incident Type'] === selectedCategory ? 'green' : 'darkgrey'
+            "
+            class="ma-2"
+            @click="
+              selectedCategory =
+                selectedCategory == crime['Incident Type']
+                  ? null
+                  : crime['Incident Type']
+            "
+            >{{ crime['Incident Type'] }} ({{ crime['crimes'].length }})</v-chip
+          ></v-expansion-panel-content
+        ></v-expansion-panel
+      ></v-expansion-panels
+    >
+
     <IPGmap
       ref="map"
       api-key="AIzaSyBnJ5jl0UqbTRJqe1uJEVj_J3OmZTRQRkc"
@@ -213,6 +238,7 @@
         <IPGmapHeatMap
           :show-heatmap="showHeatmap"
           :dissipating="dissipating"
+          :selected-category="selectedCategory"
           :points="points"
           :max-intensity="maxIntensity"
           :radius="heatMapRadius"
@@ -248,10 +274,12 @@ export default {
   data() {
     return {
       title: 'San Francisco Crimes Analysis',
+      selectedCategory: null,
       tabs: null,
       showHelp: false,
       propertyDrawer: false,
       panelsState: [0, 1, 2],
+      chipsState: [],
       enablePOI: false,
       measures: [
         'Population',
@@ -319,6 +347,11 @@ export default {
     points() {
       if (this.$store.state.datasets && this.$store.state.datasets.points)
         return this.$store.state.datasets.points
+      else return []
+    },
+    crimes() {
+      if (this.$store.state.datasets && this.$store.state.datasets.crimes)
+        return this.$store.state.datasets.crimes
       else return []
     },
     calendarData: {
